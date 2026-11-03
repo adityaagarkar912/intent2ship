@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Shellcheck
+        run: |
+          command -v shellcheck >/dev/null || sudo apt-get install -y shellcheck
+          shellcheck -x plugins/intent2ship/skills/github/scripts/wf.sh cloud/setup.sh \
+            tests/check-repo.sh tests/check-version-bump.sh tests/run-all.sh tests/lib.sh
+          shellcheck -x -S warning tests/test-*.sh
+
+      - name: Placeholders and secrets
+        run: bash tests/check-repo.sh
+
+      - name: Install Claude Code
+        run: npm install --prefix "$RUNNER_TEMP/claude" --no-audit --no-fund @anthropic-ai/claude-code@2.1.316
+
+      - name: Validate marketplace and plugin
+        run: |
+          CLAUDE="$RUNNER_TEMP/claude/node_modules/.bin/claude"
+          "$CLAUDE" plugin validate . --strict
+          "$CLAUDE" plugin validate plugins/intent2ship --strict
+
+      - name: Tests
+        run: PATH="$RUNNER_TEMP/claude/node_modules/.bin:$PATH" bash tests/run-all.sh
+
+      - name: Version bump
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: bash tests/check-version-bump.sh "origin/$BASE_REF"

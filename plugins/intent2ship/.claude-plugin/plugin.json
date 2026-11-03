@@ -1,0 +1,13 @@
+{
+  "name": "intent2ship",
+  "description": "Approval-gated coding workflow: PRD, issue, branch, review, PR and land, with subagents for building, checks and review.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Aditya Agarkar",
+    "url": "https://github.com/adityaagarkar912"
+  },
+  "homepage": "https://github.com/adityaagarkar912/intent2ship",
+  "repository": "https://github.com/adityaagarkar912/intent2ship",
+  "license": "MIT",
+  "keywords": ["workflow", "github", "pull-request", "approval", "subagents"]
+}

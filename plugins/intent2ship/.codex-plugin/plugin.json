@@ -1,0 +1,15 @@
+{
+  "name": "intent2ship",
+  "description": "Approval-gated coding workflow: PRD, issue, branch, review, PR and land, with subagents for building, checks and review.",
+  "version": "0.1.0",
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Intent2Ship",
+    "shortDescription": "Approval-gated coding workflow.",
+    "developerName": "Aditya Agarkar",
+    "category": "Productivity",
+    "defaultPrompt": [
+      "Follow the intent2ship github skill for this change."
+    ]
+  }
+}

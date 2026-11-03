@@ -1,0 +1,16 @@
+{
+  "name": "intent2ship",
+  "description": "Approval-gated coding workflow for Cursor.",
+  "owner": {
+    "name": "Aditya Agarkar",
+    "url": "https://github.com/adityaagarkar912"
+  },
+  "plugins": [
+    {
+      "name": "intent2ship",
+      "source": "plugins/intent2ship",
+      "description": "PRD, issue, branch, review, PR and land, with a human approval at each gate.",
+      "category": "development"
+    }
+  ]
+}

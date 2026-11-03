@@ -1,0 +1,20 @@
+{
+  "name": "intent2ship",
+  "interface": {
+    "displayName": "Intent2Ship"
+  },
+  "plugins": [
+    {
+      "name": "intent2ship",
+      "source": {
+        "source": "local",
+        "path": "./plugins/intent2ship"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
