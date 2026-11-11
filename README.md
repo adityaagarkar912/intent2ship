@@ -2,7 +2,7 @@
 
 A plugin that takes a coding request from intent to a merged change through approval gates. You approve a PRD, then an issue, then a pull request. Nothing is coded before the issue is approved, and nothing merges until you tell it to.
 
-Between the gates the work happens on a labeled branch in its own git worktree: small commits, checks before and after, and a review you can follow. It works on GitHub repos from Claude Code, Claude Desktop (Code tab), Cursor, Codex CLI, and the ChatGPT Codex app, including cloud sessions, and on repos that have no remote. The skill and the helper script are shared. Each host has its own manifest and its own model for the builder, runner, and reviewer.
+Between the gates the work happens on a labeled branch in its own git worktree: small commits, checks before and after, and a review you can follow. It works on GitHub repos from Claude Code, Claude Desktop (Code tab), Cursor, Codex CLI, and the Codex app, including cloud sessions, and on repos that have no remote. The skill and the helper script are shared. Each host has its own manifest and its own model for the builder, runner, and reviewer.
 
 ## Supported hosts
 
@@ -11,8 +11,8 @@ Between the gates the work happens on a labeled branch in its own git worktree: 
 | Claude Code | `.claude-plugin/` | [Claude Code](#claude-code-and-claude-desktop-code-tab) |
 | Claude Desktop (Code tab) | Same as Claude Code | [Claude Code](#claude-code-and-claude-desktop-code-tab) |
 | Cursor | `.cursor-plugin/` | [Cursor](#cursor) |
-| Codex CLI | `.codex-plugin/` | [Codex](#codex-cli-and-the-chatgpt-codex-app) |
-| ChatGPT Codex app | Same as Codex CLI | [Codex](#codex-cli-and-the-chatgpt-codex-app) |
+| Codex CLI | `.codex-plugin/` | [Codex](#codex-cli-and-the-codex-app) |
+| Codex app | Same as Codex CLI | [Codex](#codex-cli-and-the-codex-app) |
 
 ## The flow
 
@@ -49,13 +49,13 @@ For Claude cloud sessions, paste `cloud/setup.sh` into the environment's setup s
 
 In Customize, import this repository and install `intent2ship`. Then ask for a change, or run `/intent2ship`.
 
-### Codex CLI and the ChatGPT Codex app
+### Codex CLI and the Codex app
 
 ```
 codex plugin marketplace add adityaagarkar912/intent2ship
 ```
 
-Enable `intent2ship`, then ask for a change. The default prompt follows the github skill. The ChatGPT Codex app uses the same Codex plugin.
+Enable `intent2ship`, then ask for a change. The default prompt follows the github skill. The Codex app uses the same Codex plugin.
 
 Codex needs no extra setup for the subagents. The plugin install does not register custom agents, so the skill passes each role's model and rules in the delegation message itself. The files in `plugins/intent2ship/codex-agents/` are optional: copy them to `~/.codex/agents/` only if you want named agents.
 
@@ -70,7 +70,7 @@ Codex needs no extra setup for the subagents. The plugin install does not regist
 | Agent | Claude | Cursor | Codex | Job |
 |---|---|---|---|---|
 | `builder` | Sonnet | `composer-2.5[fast=false]` | `gpt-6.1-sol`, medium | Implements one checklist item. Never stages, commits or pushes. |
-| `runner` | Haiku | `composer-2.5[fast=true]` | `gpt-6-luna`, low | Runs the check commands and returns pass, fail or flaky with the first failing lines, so test output stays out of the main conversation. |
+| `runner` | Haiku | `composer-2.5[fast=false]` | `gpt-6-luna`, low | Runs the check commands and returns pass, fail or flaky with the first failing lines, so test output stays out of the main conversation. |
 | `reviewer` | Your session's model | Inherits the session | Inherits the parent | Read-only review of the whole diff against the PRD. |
 
 If a named model is not available on the account, the parent model is used and the session says so. Availability varies: Codex offers `gpt-6.1-sol` on paid plans and `gpt-6-luna` on all plans, but Enterprise and Edu workspaces need an admin to enable Luna first. In Cursor, the bracket in `composer-2.5[fast=false]` picks the variant.
@@ -93,7 +93,7 @@ Not yet verified:
 - Cloud sessions: pushing `feat/` branches, loading the plugin's agents, and the REST pull request lookup.
 - `gh pr merge` from a worktree against a live repository.
 - Installing the Cursor plugin from Customize, and installing the Codex plugin from `codex plugin marketplace add`.
-- Claude Desktop (Code tab) and the ChatGPT Codex app: both are expected to work with the plugins above, but neither has been run end to end.
+- Claude Desktop (Code tab) and the Codex app: both are expected to work with the plugins above, but neither has been run end to end.
 - Codeberg and other git hosts. A separate skill is planned.
 
 ## Security

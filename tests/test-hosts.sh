@@ -59,7 +59,7 @@ for path in (
 
 expect = {
     "builder": ("sonnet", "composer-2.5[fast=false]"),
-    "runner": ("haiku", "composer-2.5[fast=true]"),
+    "runner": ("haiku", "composer-2.5[fast=false]"),
     "reviewer": ("inherit", "inherit"),
 }
 for name, (claude_model, cursor_model) in expect.items():
@@ -94,7 +94,7 @@ PY
 
 check_host_names() {
   local h
-  for h in "Claude Code" "Claude Desktop" "Cursor" "Codex CLI" "ChatGPT Codex"; do
+  for h in "Claude Code" "Claude Desktop" "Cursor" "Codex CLI" "Codex app"; do
     grep -q "$h" "$ROOT/README.md" && grep -q "$h" "$ROOT/plugins/intent2ship/skills/github/SKILL.md" \
       || { echo "host not named in README.md and SKILL.md: $h"; return 1; }
   done

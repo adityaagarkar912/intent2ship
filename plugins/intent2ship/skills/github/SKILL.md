@@ -6,7 +6,7 @@ description: >-
   in a repo, even a one-line fix: new features, bug fixes, chores, refactors, "build X",
   "fix Y", "start on issue N", writing a PRD, opening an issue or PR, reviewing a branch, or
   merging. Also use to set up a repo for this workflow. Works in Claude Code, Claude Desktop
-  (Code tab), Cursor, Codex CLI, and the ChatGPT Codex app, including local and cloud
+  (Code tab), Cursor, Codex CLI, and the Codex app, including local and cloud
   sessions. Not for repos hosted on Codeberg or other non-GitHub remotes.
 ---
 
@@ -41,7 +41,7 @@ Subagents: `builder`, `runner` and `reviewer`. Inside Claude Code the names may 
 Pass the model for this host when you delegate. If that model is not available, use the parent model and tell the user. Match on how your host starts subagents, not on its marketing name, because apps get renamed. If none of the three below fits, spawn with your host's own mechanism, pass no model, and start the message with the role file body as described for Codex.
 
 - Claude: spawn the named agent and do not pass a different model. Builder is Sonnet, runner is Haiku, reviewer inherits the session.
-- Cursor: on the Task call, builder is `composer-2.5[fast=false]`, runner is `composer-2.5[fast=true]`, and reviewer omits the model so it inherits. The bracket picks the variant; a bare `composer-2.5` has run as the fast variant in some Cursor builds. If the slug is rejected, retry that agent with `inherit`.
+- Cursor: on the Task call, builder and runner are both `composer-2.5[fast=false]`, and reviewer omits the model so it inherits. The bracket picks the standard variant, because the fast variant costs more per token and a bare `composer-2.5` has run as the fast variant in some Cursor builds. If the slug is rejected, retry that agent with `inherit`.
 - Codex: spawn builder as `gpt-6.1-sol` with effort `medium`, runner as `gpt-6-luna` with effort `low`, and reviewer with no model or effort so it inherits the parent. The plugin install does not register custom agents, so do not rely on installed agent files. Start every delegation message with the body of the role file, `$SKILL_DIR/../../agents/<role>.md` (everything after the front matter), then add the delegation details. If the user copied the optional agent files, the model and effort set in a file win over a spawn value; the files here set the same values. If the role file cannot be read, do that step yourself and tell the user.
 
 ## Hard rules
