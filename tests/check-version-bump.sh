@@ -23,7 +23,9 @@ done
 claude_new=$(version < "$claude")
 cursor_new=$(version < "$cursor")
 codex_new=$(version < "$codex")
-if [[ "$claude_new" != "$cursor_new" || "$claude_new" != "$codex_new" ]]; then
+same=0
+[[ "$claude_new" == "$cursor_new" && "$claude_new" == "$codex_new" ]] && same=1
+if [[ $same -eq 0 ]]; then
   echo "Plugin manifest versions differ: claude $claude_new, cursor $cursor_new, codex $codex_new. Bump them together." >&2
   exit 1
 fi
