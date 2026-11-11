@@ -120,4 +120,11 @@ expect "check pass"                  0 "PASS"                $W check 'true'
 expect "check fail exit 1"           1 "FAIL"                $W check 'false' 'true'
 expect "check no args"               1 "usage"               $W check
 
+echo "## INTENT2SHIP_SESSION=cloud override (keyed on facts, not host names)"
+cd "$T"; git -C up.git symbolic-ref HEAD refs/heads/main; rm -rf cl4; git clone -q up.git cl4 2>/dev/null; cd cl4; git config user.email t@t; git config user.name t
+expect "env: local by default"       0 "session=local"       $W env
+expect "env: override says cloud"    0 "session=cloud"       env INTENT2SHIP_SESSION=cloud $W env
+expect "cloud override: in place"    0 "^branch feat/cloudx" env INTENT2SHIP_SESSION=cloud $W start feat - cloudx
+expect "cloud override: no worktree" 0 -  bash -c '[ ! -e .worktrees ] && [ "$(git branch --show-current)" = feat/cloudx ]'
+
 echo; echo "passed=$PASS failed=$FAIL"

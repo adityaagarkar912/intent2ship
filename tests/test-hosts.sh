@@ -101,6 +101,16 @@ check_host_names() {
   echo "hosts named"
 }
 
+# Product names change. Behaviour must key on facts, so the step files may not name a host app.
+# (SKILL.md names hosts only to pick a model; setup.md mentions the CLAUDE.md import, which is a feature.)
+check_no_names_in_references() {
+  local hits
+  hits=$(grep -n -i -E 'cursor|codex|chatgpt|claude local' "$ROOT"/plugins/intent2ship/skills/github/references/*.md || true)
+  [[ -z $hits ]] || { echo "host names in references: $hits"; return 1; }
+  echo "references are name-free"
+}
+
 expect "host manifests and prompt bodies" 0 "prompts match" check_hosts
+expect "references do not key on host names" 0 "references are name-free" check_no_names_in_references
 expect "all five hosts named in README and SKILL.md" 0 "hosts named" check_host_names
 finish

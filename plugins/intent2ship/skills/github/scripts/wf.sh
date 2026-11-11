@@ -50,8 +50,12 @@ remote_host() {
   printf '%s' "$host" | tr '[:upper:]' '[:lower:]'
 }
 
+# A cloud session is an isolated VM: no worktrees, push after each commit. Keyed on facts, not on
+# the host app name: Claude cloud sets CLAUDE_CODE_REMOTE, and any host can set INTENT2SHIP_SESSION=cloud.
+is_cloud() { [[ "${CLAUDE_CODE_REMOTE:-}" == "true" || "${INTENT2SHIP_SESSION:-}" == "cloud" ]]; }
+
 mode() {
-  if [[ "${CLAUDE_CODE_REMOTE:-}" == "true" ]]; then echo github; return; fi
+  if is_cloud; then echo github; return; fi
   local url host
   url=$(git remote get-url origin 2>/dev/null || true)
   if [[ -z "$url" ]]; then echo local; return; fi
@@ -117,7 +121,7 @@ range_summary() {  # <old-base> <old-tip> <new-base> <new-tip>
 cmd_env() {
   in_repo
   local where=local
-  if [[ "${CLAUDE_CODE_REMOTE:-}" == "true" ]]; then where=cloud; fi
+  if is_cloud; then where=cloud; fi
   echo "session=$where mode=$(mode) base=$(base) online=$(online) main_checkout=\"$(main_wt)\""
 }
 
@@ -148,7 +152,7 @@ cmd_start() {
     fi
   fi
 
-  if [[ "${CLAUDE_CODE_REMOTE:-}" == "true" ]]; then
+  if is_cloud; then
     git switch --no-track -c "$branch" "$from"
     echo "branch $branch$stale"
     return
@@ -177,7 +181,7 @@ cmd_resume() {
   if git show-ref --verify --quiet "refs/remotes/origin/$branch"; then has_remote=1; fi
   [[ $has_local -eq 1 || $has_remote -eq 1 ]] || die "no such branch locally or on origin: $branch"
 
-  if [[ "${CLAUDE_CODE_REMOTE:-}" == "true" ]]; then
+  if is_cloud; then
     if [[ $has_local -eq 1 ]]; then git switch "$branch"
     else git switch --track -c "$branch" "origin/$branch"; fi
     echo "branch $branch$stale"
@@ -265,7 +269,7 @@ cmd_cleanup() {
   local branch=$1 m b root wt target
   valid_branch "$branch" || die "branch must look like feat/42-slug, fix/slug or chore/slug"
   in_repo
-  if [[ "${CLAUDE_CODE_REMOTE:-}" == "true" ]]; then echo "nothing to clean up in a cloud session"; return 0; fi
+  if is_cloud; then echo "nothing to clean up in a cloud session"; return 0; fi
   m=$(mode)
   [[ "$m" != other ]] || die "remote is not GitHub; use the matching workflow skill"
   b=$(base); root=$(main_wt)
