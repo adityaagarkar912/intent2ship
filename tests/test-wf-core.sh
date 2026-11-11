@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2164,SC2034  # test scripts: a failed cd shows up as a failed assertion
 ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
-W="bash ${WF:-$ROOT/plugins/intent2ship/skills/github/scripts/wf.sh}"
+WF_SRC="${WF:-$ROOT/plugins/intent2ship/skills/github/scripts/wf.sh}"
 export GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_SYSTEM=/dev/null
 export GIT_AUTHOR_NAME=t GIT_AUTHOR_EMAIL=t@t GIT_COMMITTER_NAME=t GIT_COMMITTER_EMAIL=t@t
 REAL_GIT=$(command -v git)
-T=$(mktemp -d); cd "$T"
+T=$(cd "$(mktemp -d)" && pwd -P); cd "$T"
+cp "$WF_SRC" "$T/wf.sh"; W="bash $T/wf.sh"
 PASS=0; FAIL=0
 mk() { rm -rf "$1"; git init -q -b main "$1"; git -C "$1" config user.email t@t; git -C "$1" config user.name t; echo a > "$1/a"; git -C "$1" add a; git -C "$1" commit -qm init; }
 # expect <label> <expected-exit> <grep-pattern or -> cmd...

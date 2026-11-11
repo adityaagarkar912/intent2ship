@@ -2,7 +2,7 @@
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 # The placeholder tokens are built from parts so a bulk replace in the repo does not touch this file.
 AT="@@"
-T=$(mktemp -d); cd "$T" || exit 1
+T=$(cd "$(mktemp -d)" && pwd -P); cd "$T" || exit 1
 # A local "release" repo built from this working tree, tagged v0.1.0.
 git init -q -b main rel
 cp -r "$ROOT/.claude-plugin" "$ROOT/plugins" rel/

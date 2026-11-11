@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2164,SC2034  # test scripts: a failed cd shows up as a failed assertion
 ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
-W="bash ${WF:-$ROOT/plugins/intent2ship/skills/github/scripts/wf.sh}"
+WF_SRC="${WF:-$ROOT/plugins/intent2ship/skills/github/scripts/wf.sh}"
 export GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_SYSTEM=/dev/null
 export GIT_AUTHOR_NAME=t GIT_AUTHOR_EMAIL=t@t GIT_COMMITTER_NAME=t GIT_COMMITTER_EMAIL=t@t
 REAL_GIT=$(command -v git)
-T=$(mktemp -d); cd "$T"
+T=$(cd "$(mktemp -d)" && pwd -P); cd "$T"
+cp "$WF_SRC" "$T/wf.sh"; W="bash $T/wf.sh"
 PASS=0; FAIL=0
 expect() { local l=$1 ex=$2 pat=$3; shift 3; local out; out=$("$@" 2>&1); local rc=$?
   if [[ $rc -eq $ex ]] && { [[ $pat == - ]] || grep -q -- "$pat" <<<"$out"; }; then PASS=$((PASS+1)); echo "ok   $l"
@@ -61,14 +62,14 @@ for a in "$@"; do case "$a" in fetch|ls-remote|push) net=1;; esac; done
 if [[ $net -eq 1 ]]; then exec @REAL_GIT@ -c "url.file://$WF_BARE.insteadOf=https://github.com/o/r.git" "$@"; fi
 exec @REAL_GIT@ "$@"
 EOF
-sed -i.bak "s#@REAL_GIT@#$REAL_GIT#" shim/git && rm -f shim/git.bak; chmod +x shim/git; S="env PATH=$T/shim:$PATH"
+sed -i.bak "s#@REAL_GIT@#$REAL_GIT#" shim/git && rm -f shim/git.bak; chmod +x shim/git; with_shim() { env PATH="$T/shim:$PATH" "$@"; }
 git init -q --bare -b main up.git
 git clone -q up.git seed 2>/dev/null; ( cd seed && git checkout -q -b main 2>/dev/null; seq 1 5 > f; git add f; gi commit -qm c1; git push -q origin main )
 git clone -q up.git cl 2>/dev/null; cd cl; git remote set-url origin https://github.com/o/r.git
-$S $W start feat 5 gh >/dev/null 2>&1; ( cd .worktrees/feat-5-gh && echo g > g && git add g && gi commit -qm "feat: g (#5)" && git push -q "$WF_BARE" feat/5-gh:feat/5-gh )
-expect "not merged on origin: refused"  1 "is not merged into origin/main" $S $W cleanup feat/5-gh
+with_shim $W start feat 5 gh >/dev/null 2>&1; ( cd .worktrees/feat-5-gh && echo g > g && git add g && gi commit -qm "feat: g (#5)" && git push -q "$WF_BARE" feat/5-gh:feat/5-gh )
+expect "not merged on origin: refused"  1 "is not merged into origin/main" with_shim $W cleanup feat/5-gh
 ( cd "$T/seed" && git fetch -q origin && git checkout -q main && gi merge -q --no-ff -m "Merge feat/5-gh" origin/feat/5-gh && git push -q origin main )   # "GitHub merges the PR"
-expect "merged on origin: cleans up"    0 "cleaned feat/5-gh"  $S $W cleanup feat/5-gh
+expect "merged on origin: cleans up"    0 "cleaned feat/5-gh"  with_shim $W cleanup feat/5-gh
 expect "local main fast-forwarded"      0 -  bash -c '[ "$(git rev-parse main)" = "$(git rev-parse origin/main)" ] && [ -f g ]'
 expect "worktree gone"                  0 -  bash -c '[ ! -d .worktrees/feat-5-gh ]'
 cd "$T"; rm -rf off; git clone -q up.git off 2>/dev/null; cd off; git config user.email t@t; git config user.name t

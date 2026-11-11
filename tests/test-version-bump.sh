@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
-T=$(mktemp -d); cd "$T" || exit 1
+T=$(cd "$(mktemp -d)" && pwd -P); cd "$T" || exit 1
 git init -q -b main r; cd r || exit 1
 mkdir -p plugins/intent2ship docs
 write_versions() {
