@@ -42,7 +42,7 @@ Pass the model for this host when you delegate. If that model is not available, 
 
 - Claude: spawn the named agent and do not pass a different model. Builder is Sonnet, runner is Haiku, reviewer inherits the session.
 - Cursor: on the Task call, builder is `composer-2.5`, runner is `composer-2.5-fast`, and reviewer omits the model so it inherits. If the slug is rejected, retry that agent with `inherit`.
-- Codex: spawn builder as `gpt-6.1-sol` with effort `medium`, runner as `gpt-6-luna` with effort `low`, and reviewer with no model or effort so it inherits the parent. An explicit spawn value wins over a copied agent file. The delegation message still includes that role's rules.
+- Codex: spawn builder as `gpt-6.1-sol` with effort `medium`, runner as `gpt-6-luna` with effort `low`, and reviewer with no model or effort so it inherits the parent. The plugin install does not register custom agents, so do not rely on installed agent files. Start every delegation message with the body of the role file, `$SKILL_DIR/../../agents/<role>.md` (everything after the front matter), then add the delegation details. An explicit spawn value wins over any agent file the user copied. If the role file cannot be read, do that step yourself and tell the user.
 
 ## Hard rules
 

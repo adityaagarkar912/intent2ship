@@ -57,14 +57,7 @@ codex plugin marketplace add adityaagarkar912/intent2ship
 
 Enable `intent2ship`, then ask for a change. The default prompt follows the github skill. The ChatGPT Codex app uses the same Codex plugin.
 
-Codex plugin install does not register custom agents. Copy the role files yourself:
-
-```
-mkdir -p ~/.codex/agents
-cp plugins/intent2ship/codex-agents/*.toml ~/.codex/agents/
-```
-
-Until those files are copied, the skill still names the model when it spawns a subagent, and the delegation message includes that role's rules.
+Codex needs no extra setup for the subagents. The plugin install does not register custom agents, so the skill passes each role's model and rules in the delegation message itself. The files in `plugins/intent2ship/codex-agents/` are optional: copy them to `~/.codex/agents/` only if you want named agents.
 
 ## Requirements
 
