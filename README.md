@@ -69,11 +69,11 @@ Codex needs no extra setup for the subagents. The plugin install does not regist
 
 | Agent | Claude | Cursor | Codex | Job |
 |---|---|---|---|---|
-| `builder` | Sonnet | `composer-2.5` | `gpt-6.1-sol`, medium | Implements one checklist item. Never stages, commits or pushes. |
-| `runner` | Haiku | `composer-2.5-fast` | `gpt-6-luna`, low | Runs the check commands and returns pass, fail or flaky with the first failing lines, so test output stays out of the main conversation. |
+| `builder` | Sonnet | `composer-2.5[fast=false]` | `gpt-6.1-sol`, medium | Implements one checklist item. Never stages, commits or pushes. |
+| `runner` | Haiku | `composer-2.5[fast=true]` | `gpt-6-luna`, low | Runs the check commands and returns pass, fail or flaky with the first failing lines, so test output stays out of the main conversation. |
 | `reviewer` | Your session's model | Inherits the session | Inherits the parent | Read-only review of the whole diff against the PRD. |
 
-If a named model is not available on the account, the parent model is used and the session says so.
+If a named model is not available on the account, the parent model is used and the session says so. Availability varies: Codex offers `gpt-6.1-sol` on paid plans and `gpt-6-luna` on all plans, but Enterprise and Edu workspaces need an admin to enable Luna first. In Cursor, the bracket in `composer-2.5[fast=false]` picks the variant.
 
 The main session reviews every diff, re-runs the checks, commits, and keeps all approvals. The plugin adds about 270 tokens to a session; the skill itself is about 1,000 tokens when it runs, plus the reference file for the current step.
 

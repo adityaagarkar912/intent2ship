@@ -58,8 +58,8 @@ for path in (
         sys.exit(1)
 
 expect = {
-    "builder": ("sonnet", "composer-2.5"),
-    "runner": ("haiku", "composer-2.5-fast"),
+    "builder": ("sonnet", "composer-2.5[fast=false]"),
+    "runner": ("haiku", "composer-2.5[fast=true]"),
     "reviewer": ("inherit", "inherit"),
 }
 for name, (claude_model, cursor_model) in expect.items():
