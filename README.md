@@ -2,7 +2,17 @@
 
 A plugin that takes a coding request from intent to a merged change through approval gates. You approve a PRD, then an issue, then a pull request. Nothing is coded before the issue is approved, and nothing merges until you tell it to.
 
-Between the gates the work happens on a labeled branch in its own git worktree: small commits, checks before and after, and a review you can follow. It works on GitHub repos from Claude Code, Cursor, and Codex, including cloud sessions, and on repos that have no remote. The skill and the helper script are shared. Each host has its own manifest and its own model for the builder, runner, and reviewer.
+Between the gates the work happens on a labeled branch in its own git worktree: small commits, checks before and after, and a review you can follow. It works on GitHub repos from Claude Code, Claude Desktop (Code tab), Cursor, Codex CLI, and the ChatGPT Codex app, including cloud sessions, and on repos that have no remote. The skill and the helper script are shared. Each host has its own manifest and its own model for the builder, runner, and reviewer.
+
+## Supported hosts
+
+| Host | Package | Install |
+|---|---|---|
+| Claude Code | `.claude-plugin/` | [Claude Code](#claude-code-and-claude-desktop-code-tab) |
+| Claude Desktop (Code tab) | Same as Claude Code | [Claude Code](#claude-code-and-claude-desktop-code-tab) |
+| Cursor | `.cursor-plugin/` | [Cursor](#cursor) |
+| Codex CLI | `.codex-plugin/` | [Codex](#codex-cli-and-the-chatgpt-codex-app) |
+| ChatGPT Codex app | Same as Codex CLI | [Codex](#codex-cli-and-the-chatgpt-codex-app) |
 
 ## The flow
 
@@ -24,14 +34,14 @@ Every change goes through all nine steps, including one-line fixes.
 
 Ask for a change as usual after installing. The first run in a repo offers the one-time setup. Setup writes the workflow sections in `AGENTS.md`. When `CLAUDE.md` is missing, setup adds a one-line `@AGENTS.md` import so Claude Code reads the same file. Check commands still come from the base branch copy of that file.
 
-### Claude Code
+### Claude Code and Claude Desktop (Code tab)
 
 ```
 /plugin marketplace add adityaagarkar912/intent2ship#v0.1.0
 /plugin install intent2ship@intent2ship
 ```
 
-Then ask for a change, or run `/intent2ship:github`.
+Then ask for a change, or run `/intent2ship:github`. The Code tab in Claude Desktop runs Claude Code, so the install and the commands are the same.
 
 For Claude cloud sessions, paste `cloud/setup.sh` into the environment's setup script field. It installs one pinned release and checks the commit SHA before installing. Set `TAG` and `SHA` in the script first.
 
@@ -39,13 +49,13 @@ For Claude cloud sessions, paste `cloud/setup.sh` into the environment's setup s
 
 In Customize, import this repository and install `intent2ship`. Then ask for a change, or run `/intent2ship`.
 
-### Codex
+### Codex CLI and the ChatGPT Codex app
 
 ```
 codex plugin marketplace add adityaagarkar912/intent2ship
 ```
 
-Enable `intent2ship`, then ask for a change. The default prompt follows the github skill.
+Enable `intent2ship`, then ask for a change. The default prompt follows the github skill. The ChatGPT Codex app uses the same Codex plugin.
 
 Codex plugin install does not register custom agents. Copy the role files yourself:
 
@@ -90,6 +100,7 @@ Not yet verified:
 - Cloud sessions: pushing `feat/` branches, loading the plugin's agents, and the REST pull request lookup.
 - `gh pr merge` from a worktree against a live repository.
 - Installing the Cursor plugin from Customize, and installing the Codex plugin from `codex plugin marketplace add`.
+- Claude Desktop (Code tab) and the ChatGPT Codex app: both are expected to work with the plugins above, but neither has been run end to end.
 - Codeberg and other git hosts. A separate skill is planned.
 
 ## Security

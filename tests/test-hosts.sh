@@ -92,5 +92,15 @@ print("prompts match")
 PY
 }
 
+check_host_names() {
+  local h
+  for h in "Claude Code" "Claude Desktop" "Cursor" "Codex CLI" "ChatGPT Codex"; do
+    grep -q "$h" "$ROOT/README.md" && grep -q "$h" "$ROOT/plugins/intent2ship/skills/github/SKILL.md" \
+      || { echo "host not named in README.md and SKILL.md: $h"; return 1; }
+  done
+  echo "hosts named"
+}
+
 expect "host manifests and prompt bodies" 0 "prompts match" check_hosts
+expect "all five hosts named in README and SKILL.md" 0 "hosts named" check_host_names
 finish

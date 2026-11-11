@@ -5,9 +5,9 @@ description: >-
   branch, review, PR and land, with the user approving each gate. Use for any coding change
   in a repo, even a one-line fix: new features, bug fixes, chores, refactors, "build X",
   "fix Y", "start on issue N", writing a PRD, opening an issue or PR, reviewing a branch, or
-  merging. Also use to set up a repo for this workflow. Works in Claude Code, Cursor, and
-  Codex, including local and cloud sessions. Not for repos hosted on Codeberg or other
-  non-GitHub remotes.
+  merging. Also use to set up a repo for this workflow. Works in Claude Code, Claude Desktop
+  (Code tab), Cursor, Codex CLI, and the ChatGPT Codex app, including local and cloud
+  sessions. Not for repos hosted on Codeberg or other non-GitHub remotes.
 ---
 
 # Intent2Ship: GitHub flow
@@ -63,8 +63,8 @@ Run once at the start and state the result in one line: the host, local or cloud
 | Host | How you know | Branch |
 |---|---|---|
 | Claude cloud | `CLAUDE_CODE_REMOTE` is `true` | In place. No worktree. Push after each commit. GitHub commands are the Claude-cloud column in `references/modes.md`. |
-| Claude local | Claude Code, and `CLAUDE_CODE_REMOTE` is not `true` | Worktree under `.worktrees/`. `gh` for GitHub. |
-| Codex local | Codex CLI or desktop, on this machine | Same as Claude local. |
+| Claude local | Claude Code CLI or the Claude Desktop Code tab on this machine, and `CLAUDE_CODE_REMOTE` is not `true` | Worktree under `.worktrees/`. `gh` for GitHub. |
+| Codex local | Codex CLI or the ChatGPT Codex app, running on this machine | Same as Claude local. |
 | Cursor local | Cursor, on this machine | Same as Claude local. |
 | Cursor cloud, Codex cloud, ChatGPT Work | The session is already a hosted VM | In place. No worktree. Push after each commit. Use `gh`. Use the Claude-cloud REST commands only when `gh` is actually blocked. |
 
