@@ -46,7 +46,7 @@ if codex_manifest.get("skills") != "./skills/":
     print("codex skills path")
     sys.exit(1)
 versions = {cursor_manifest.get("version"), codex_manifest.get("version"), claude_manifest.get("version")}
-if versions != {"0.1.0"}:
+if len(versions) != 1 or None in versions:
     print("manifest versions", versions)
     sys.exit(1)
 for path in (
@@ -149,6 +149,23 @@ print("host paths ok")
 PY
 }
 
+# Rules found by running the skill for real. Each one is a sentence the model needs to see, so a
+# later edit must not drop it.
+check_skill_rules() {
+  local s=$ROOT/plugins/intent2ship/skills/github r=$ROOT/plugins/intent2ship/skills/github/references miss=""
+  need() { grep -qF -- "$2" "$1" || miss="$miss\n  $(basename "$1"): $2"; }
+  need "$s/SKILL.md" "Offer setup before Step 2"
+  need "$s/SKILL.md" "Never create labels, hooks or instruction-file sections without asking"
+  need "$r/plan.md" "do not create it on your own"
+  need "$r/plan.md" "without \`--force\`"
+  need "$r/build.md" "info/exclude"
+  need "$r/ship.md" "GH007"
+  need "$r/ship.md" "Automatically delete head branches"
+  need "$ROOT/README.md" "GH007"
+  [[ -z $miss ]] || { printf 'missing rules:%b\n' "$miss"; return 1; }
+  echo "skill rules present"
+}
+
 check_host_names() {
   local h
   for h in "Claude Code" "Claude Desktop" "Cursor" "Codex CLI" "Codex app"; do
@@ -169,6 +186,7 @@ check_no_names_in_references() {
 
 expect "host manifests and prompt bodies" 0 "prompts match" check_hosts
 expect "manifest and marketplace paths exist" 0 "host paths ok" check_host_paths
+expect "skill rules from real runs are present" 0 "skill rules present" check_skill_rules
 expect "references do not key on host names" 0 "references are name-free" check_no_names_in_references
 expect "all five hosts named in README and SKILL.md" 0 "hosts named" check_host_names
 finish

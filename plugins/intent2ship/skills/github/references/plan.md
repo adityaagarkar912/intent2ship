@@ -64,7 +64,7 @@ A bundle of small chores is one `chore` issue with one checklist item per chore.
 1. Search for duplicates: open and closed issues by keyword (commands in `references/modes.md`). If one overlaps, show it and ask whether to continue it instead.
 2. Create the issue:
    - Title: sentence case, under 70 characters.
-   - Label: `feature`, `bugfix` or `chore`.
+   - Label: `feature`, `bugfix` or `chore`. If the label does not exist, do not create it on your own: the labels belong to setup (`references/setup.md`, part A). Stop and offer setup. If the user declines setup, ask before creating just the one label you need, without `--force`, so existing labels are never overwritten.
    - Body: two-line summary, the task checklist (`- [ ]`) in plain language, acceptance criteria, then the full approved PRD inside `<details><summary>PRD</summary> ... </details>`.
 3. Share the link and stop. The user reviews it on GitHub and approves in chat.
 4. Re-read the issue and compare it with what you posted. If it differs, show the user the difference. From here on the issue is the source of truth.

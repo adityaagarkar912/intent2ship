@@ -1,7 +1,7 @@
 {
   "name": "intent2ship",
   "description": "Approval-gated coding workflow: PRD, issue, branch, review, PR and land, with subagents for building, checks and review.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "skills": "./skills/",
   "interface": {
     "displayName": "Intent2Ship",

@@ -79,11 +79,12 @@ The main session reviews every diff, re-runs the checks, commits, and keeps all 
 
 ## Status
 
-v0.1.0 is a pre-release.
+v0.2.0 is a pre-release.
 
 Verified:
 
 - More than 110 shell tests covering the helper script, the setup script and the version check.
+- Claude Code CLI, run end to end with `/intent2ship:github` in a repo with no remote and in a GitHub repo: PRD, issue, branch, review, PR, approval and merge, with a merge only after "merge". A PR merge from a worktree works against a live repository.
 - `claude plugin validate --strict` on the marketplace and the plugin.
 - The plugin installs from a pinned clone and loads one skill and three agents.
 - Command syntax checked against the current `gh` and GitHub REST documentation.
@@ -91,10 +92,16 @@ Verified:
 Not yet verified:
 
 - Cloud sessions: pushing `feat/` branches, loading the plugin's agents, and the REST pull request lookup.
-- `gh pr merge` from a worktree against a live repository.
+- The skill starting on its own, without `/intent2ship:github`. It did not start once, in a Claude Code session created from the agents view.
+- Delegation to the builder and runner. The Claude runs so far changed one file, which the skill does itself.
 - Installing the Cursor plugin from Customize, and installing the Codex plugin from `codex plugin marketplace add`.
 - Claude Desktop (Code tab) and the Codex app: both are expected to work with the plugins above, but neither has been run end to end.
 - Codeberg and other git hosts. A separate skill is planned.
+
+## Troubleshooting
+
+- **Push rejected with `GH007` ("would publish a private email address").** GitHub blocks pushes whose commits carry a private email. In the repo, run `git config user.email "<id>+<login>@users.noreply.github.com"` (the address is on github.com/settings/emails), reset the author on the branch's commits, and push again. Or turn off "Block command line pushes that expose my email" in the same settings page.
+- **The remote branch is still there after a merge.** Some permission modes block `git push origin --delete` as destructive. Run it yourself, or turn on "Automatically delete head branches" in the repository settings.
 
 ## Security
 

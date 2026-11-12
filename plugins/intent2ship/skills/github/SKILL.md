@@ -62,7 +62,7 @@ Run once at the start and state the result in one line: local or cloud, and GitH
 
 | Question | How you know | Effect |
 |---|---|---|
-| Local or cloud? | `bash wf.sh env` prints `session=cloud` when `CLAUDE_CODE_REMOTE=true` or `INTENT2SHIP_SESSION=cloud` is set. A cloud session is an isolated VM that is not the user's machine. If the script says `local` but the session is plainly a hosted VM, treat it as cloud, tell the user, and put `INTENT2SHIP_SESSION=cloud` in front of every `wf.sh` call (the shell does not keep variables between calls). | Local: worktree under `.worktrees/`, push only when opening the PR. Cloud: in place, no worktree, push after each commit. |
+| Local or cloud? | `echo "${CLAUDE_CODE_REMOTE:-} ${INTENT2SHIP_SESSION:-}"`. Cloud when `CLAUDE_CODE_REMOTE` is `true` or `INTENT2SHIP_SESSION` is `cloud`. A cloud session is an isolated VM that is not the user's machine. If both are unset but the session is plainly a hosted VM, treat it as cloud and tell the user. When the user asks you to run `wf.sh` in such a session, put `INTENT2SHIP_SESSION=cloud` in front of every call (the shell does not keep variables between calls). | Local: worktree under `.worktrees/`, push only when opening the PR. Cloud: in place, no worktree, push after each commit. |
 | Which GitHub commands? | Use `gh`. If `gh pr` or `gh issue` fail because a proxy blocks them (GraphQL), switch to the REST fallback in `references/modes.md`. | `gh` by default. REST only when `gh` is actually blocked. |
 
 Cloud sessions are GitHub mode, whatever the remote URL looks like.
@@ -72,6 +72,8 @@ Cloud sessions are GitHub mode, whatever the remote URL looks like.
 | Remote (local session) | `git remote get-url origin` | `github.com` means GitHub mode; no remote means local-only mode; any other host means stop and use the matching workflow skill (for example Codeberg). |
 | Owner and repo | Parse `owner/repo` from the remote URL path | Use it explicitly in `gh api repos/<owner>/<repo>/...` calls. |
 | Default branch | `git ls-remote --symref origin HEAD` (GitHub), else whichever of `main` or `master` exists | Use it wherever the skill says `main`. |
+
+Offer setup before Step 2 when neither `AGENTS.md` nor `CLAUDE.md` has a `## Workflow` section: read `references/setup.md` and ask the user whether to run it. Never create labels, hooks or instruction-file sections without asking; part A of setup is outside the repo and needs the user's say-so. If the user declines, carry on without it.
 
 Mode differences are in `references/modes.md`. Read it before Step 3.
 
