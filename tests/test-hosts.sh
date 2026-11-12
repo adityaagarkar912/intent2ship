@@ -46,7 +46,7 @@ if codex_manifest.get("skills") != "./skills/":
     print("codex skills path")
     sys.exit(1)
 versions = {cursor_manifest.get("version"), codex_manifest.get("version"), claude_manifest.get("version")}
-if versions != {"0.1.0"}:
+if len(versions) != 1 or None in versions:
     print("manifest versions", versions)
     sys.exit(1)
 for path in (
@@ -58,8 +58,8 @@ for path in (
         sys.exit(1)
 
 expect = {
-    "builder": ("sonnet", "composer-2.5"),
-    "runner": ("haiku", "composer-2.5-fast"),
+    "builder": ("sonnet", "composer-2.5[fast=false]"),
+    "runner": ("haiku", "composer-2.5[fast=false]"),
     "reviewer": ("inherit", "inherit"),
 }
 for name, (claude_model, cursor_model) in expect.items():
@@ -92,5 +92,101 @@ print("prompts match")
 PY
 }
 
+# Every path a host manifest or marketplace points at must exist, and every manifest must be valid
+# JSON. A typo here only shows up when a user installs, so CI catches it first.
+check_host_paths() {
+  python3 - "$ROOT" <<'PY'
+import json
+import pathlib
+import sys
+
+root = pathlib.Path(sys.argv[1])
+plugin = root / "plugins" / "intent2ship"
+
+def load(path):
+    if not path.is_file():
+        print("missing", path.relative_to(root))
+        sys.exit(1)
+    try:
+        return json.loads(path.read_text())
+    except ValueError as err:
+        print("invalid JSON", path.relative_to(root), err)
+        sys.exit(1)
+
+def need(path, what):
+    if not path.exists():
+        print("missing", what, path.relative_to(root))
+        sys.exit(1)
+
+# Marketplaces: each plugin source must resolve to the plugin folder.
+claude_mp = load(root / ".claude-plugin" / "marketplace.json")
+cursor_mp = load(root / ".cursor-plugin" / "marketplace.json")
+codex_mp = load(root / ".agents" / "plugins" / "marketplace.json")
+for entry in claude_mp["plugins"] + cursor_mp["plugins"]:
+    need(root / entry["source"], "marketplace source")
+for entry in codex_mp["plugins"]:
+    need(root / entry["source"]["path"], "codex marketplace path")
+
+# Manifests: parse, and every path they name must exist.
+claude = load(plugin / ".claude-plugin" / "plugin.json")
+cursor = load(plugin / ".cursor-plugin" / "plugin.json")
+codex = load(plugin / ".codex-plugin" / "plugin.json")
+need(plugin / codex["skills"] / "github" / "SKILL.md", "codex skill")
+agents = plugin / cursor["agents"]
+need(agents, "cursor agents folder")
+for name in ("builder", "runner", "reviewer"):
+    need(agents / f"{name}.md", "cursor agent")
+    need(plugin / "agents" / f"{name}.md", "claude agent")
+    need(plugin / "codex-agents" / f"{name}.toml", "codex agent")
+need(plugin / "commands" / "intent2ship.md", "command")
+need(plugin / "skills" / "github" / "SKILL.md", "skill")
+need(plugin / "skills" / "github" / "scripts" / "wf.sh", "helper script")
+if not claude.get("name") == cursor.get("name") == codex.get("name") == "intent2ship":
+    print("manifest names differ")
+    sys.exit(1)
+
+print("host paths ok")
+PY
+}
+
+# Rules found by running the skill for real. Each one is a sentence the model needs to see, so a
+# later edit must not drop it.
+check_skill_rules() {
+  local s=$ROOT/plugins/intent2ship/skills/github r=$ROOT/plugins/intent2ship/skills/github/references miss=""
+  need() { grep -qF -- "$2" "$1" || miss="$miss\n  $(basename "$1"): $2"; }
+  need "$s/SKILL.md" "Offer setup before Step 2"
+  need "$s/SKILL.md" "Never create labels, hooks or instruction-file sections without asking"
+  need "$r/plan.md" "do not create it on your own"
+  need "$r/plan.md" "without \`--force\`"
+  need "$r/build.md" "info/exclude"
+  need "$r/ship.md" "GH007"
+  need "$r/ship.md" "Automatically delete head branches"
+  need "$ROOT/README.md" "GH007"
+  [[ -z $miss ]] || { printf 'missing rules:%b\n' "$miss"; return 1; }
+  echo "skill rules present"
+}
+
+check_host_names() {
+  local h
+  for h in "Claude Code" "Claude Desktop" "Cursor" "Codex CLI" "Codex app"; do
+    grep -q "$h" "$ROOT/README.md" && grep -q "$h" "$ROOT/plugins/intent2ship/skills/github/SKILL.md" \
+      || { echo "host not named in README.md and SKILL.md: $h"; return 1; }
+  done
+  echo "hosts named"
+}
+
+# Product names change. Behaviour must key on facts, so the step files may not name a host app.
+# (SKILL.md names hosts only to pick a model; setup.md mentions the CLAUDE.md import, which is a feature.)
+check_no_names_in_references() {
+  local hits
+  hits=$(grep -n -i -E 'cursor|codex|chatgpt|claude local' "$ROOT"/plugins/intent2ship/skills/github/references/*.md || true)
+  [[ -z $hits ]] || { echo "host names in references: $hits"; return 1; }
+  echo "references are name-free"
+}
+
 expect "host manifests and prompt bodies" 0 "prompts match" check_hosts
+expect "manifest and marketplace paths exist" 0 "host paths ok" check_host_paths
+expect "skill rules from real runs are present" 0 "skill rules present" check_skill_rules
+expect "references do not key on host names" 0 "references are name-free" check_no_names_in_references
+expect "all five hosts named in README and SKILL.md" 0 "hosts named" check_host_names
 finish

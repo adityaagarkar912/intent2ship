@@ -4,7 +4,7 @@
 
 ## GitHub mode, local session
 
-Claude local, Cursor local, and Codex local use these commands. Cursor cloud, Codex cloud, and ChatGPT Work use them too, unless `gh` is blocked.
+Local sessions use these commands. Cloud sessions use them too, unless `gh` is blocked.
 
 | Action | Command |
 |---|---|
@@ -18,9 +18,9 @@ Claude local, Cursor local, and Codex local use these commands. Cursor cloud, Co
 
 `--match-head-commit` makes the merge fail if the head is not the approved SHA. `gh pr merge` can exit non-zero after a successful merge when worktrees are involved (it tries to switch the local checkout to the base branch), so check the state with `gh pr view <n> --json state,mergeCommit` before treating it as failed.
 
-## GitHub mode, Claude cloud
+## GitHub mode, REST fallback (when `gh` is blocked)
 
-This column is only for Claude cloud, where `gh pr` and `gh issue` fail because the GitHub proxy blocks GraphQL. Cursor cloud, Codex cloud, and ChatGPT Work use the local CLI commands above. Use this REST column only when `gh` is actually blocked.
+This column is for sessions where `gh pr` and `gh issue` fail because a proxy blocks GraphQL, as in Claude cloud. Test with one read-only call such as `gh pr list`. Use these REST commands only when `gh` is actually blocked; otherwise use the local CLI commands above.
 
 Use the built-in GitHub tools, or REST through `gh api`:
 
@@ -39,7 +39,7 @@ Verify the merge with `gh api repos/<o>/<r>/pulls/<n> --jq '{state,merged,merge_
 
 The proxy rejects branch deletion, so the remote branch is removed by the repo's "Automatically delete head branches" setting. If that setting is off, tell the user which branch to delete.
 
-Claude cloud sessions can expire. The issue checklist and the `approved` label are the durable state: keep them current so a new session can resume.
+Cloud sessions can expire. The issue checklist and the `approved` label are the durable state: keep them current so a new session can resume.
 
 ## Local-only mode (no remote)
 
@@ -60,14 +60,14 @@ Behaviour (tested): exit non-zero with a clear message when the current branch i
 
 Before creating an issue, search open and closed issues by keyword.
 
-- Local session: `gh issue list --state all --search "<keywords>" --limit 20`
-- Claude cloud: `gh api --method GET search/issues -f q="repo:<o>/<r> is:issue <keywords>" --jq '.items[] | "#\(.number) \(.state) \(.title)"'`
+- `gh` works: `gh issue list --state all --search "<keywords>" --limit 20`
+- When `gh issue` is blocked: `gh api --method GET search/issues -f q="repo:<o>/<r> is:issue <keywords>" --jq '.items[] | "#\(.number) \(.state) \(.title)"'`
 
 When resuming, list every time the `approved` label was applied, so a label added by someone else is visible:
 
 `gh api repos/<o>/<r>/issues/<n>/events --paginate --jq '.[] | select(.event=="labeled" and .label.name=="approved") | [.actor.login, .created_at] | @tsv'`
 
-Show the user the result and get one chat confirmation. The events call is plain REST, so it also works in Claude cloud.
+Show the user the result and get one chat confirmation. The events call is plain REST, so it also works where `gh` is blocked.
 
 ## PR lookup, update and CI results (GitHub mode)
 
@@ -76,7 +76,7 @@ Local session:
 - Update it: `gh pr edit <n> --title "<t>" --body-file <f>`
 - CI results: `gh pr checks <n> --json name,bucket,link`. The bucket is pass, fail, pending, skipping or cancel, and exit code 8 means checks are still pending.
 
-Claude cloud (`gh pr` is blocked, use REST):
+When `gh pr` is blocked, use REST:
 - Find a PR for the branch: `gh api "repos/<o>/<r>/pulls?head=<o>:<branch>&state=all" --jq '.[] | "#\(.number) \(.state) \(.html_url)"'`
 - Update it: `gh api --method PATCH repos/<o>/<r>/pulls/<n> -f title="<t>" -F body=@<file>`
 - CI results: `gh api repos/<o>/<r>/commits/<sha>/check-runs --jq '.check_runs[] | "\(.name) \(.status) \(.conclusion)"'`. Some CI systems report through commit statuses instead; read those with `gh api repos/<o>/<r>/commits/<sha>/status --jq .state`.

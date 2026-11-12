@@ -14,7 +14,7 @@ Ask the depth first, unless the user already said it:
 
 Propose Quick for obviously small changes (a typo, a one-line fix, a chore) and let the user confirm.
 
-Ask one question at a time and give your recommended answer with each. In Cursor, use the question tool when it is available. Before asking, check whether the code already answers the question. Always ask whether the work depends on any unmerged change; if it does, see Step 4.
+Ask one question at a time and give your recommended answer with each. Use the host's question tool when it has one. Before asking, check whether the code already answers the question. Always ask whether the work depends on any unmerged change; if it does, see Step 4.
 
 If the `grill-with-docs` skill is available, use it for the questioning, with this redirect: it must not create `CONTEXT.md`, ADR files or any other file. Collect glossary terms and decisions in the conversation; they are written in Step 4. When the grill ends, run the stray-file check from Step 6 and delete anything it flags.
 
@@ -64,11 +64,11 @@ A bundle of small chores is one `chore` issue with one checklist item per chore.
 1. Search for duplicates: open and closed issues by keyword (commands in `references/modes.md`). If one overlaps, show it and ask whether to continue it instead.
 2. Create the issue:
    - Title: sentence case, under 70 characters.
-   - Label: `feature`, `bugfix` or `chore`.
+   - Label: `feature`, `bugfix` or `chore`. If the label does not exist, do not create it on your own: the labels belong to setup (`references/setup.md`, part A). Stop and offer setup. If the user declines setup, ask before creating just the one label you need, without `--force`, so existing labels are never overwritten.
    - Body: two-line summary, the task checklist (`- [ ]`) in plain language, acceptance criteria, then the full approved PRD inside `<details><summary>PRD</summary> ... </details>`.
 3. Share the link and stop. The user reviews it on GitHub and approves in chat.
 4. Re-read the issue and compare it with what you posted. If it differs, show the user the difference. From here on the issue is the source of truth.
-5. Add the `approved` label and mirror the checklist into the session todo list. In Cursor, use the todo tool.
+5. Add the `approved` label and mirror the checklist into the session todo list. Use the host's todo tool when it has one.
 
 Before Step 4 and again before Step 8, re-read the issue. If its PRD block no longer matches `prd/<slug>.md`, stop and show the difference. The user decides which side wins.
 

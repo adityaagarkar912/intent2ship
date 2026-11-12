@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2164,SC2034  # test scripts: a failed cd shows up as a failed assertion
 ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
-W="bash ${WF:-$ROOT/plugins/intent2ship/skills/github/scripts/wf.sh}"
+WF_SRC="${WF:-$ROOT/plugins/intent2ship/skills/github/scripts/wf.sh}"
 export GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_SYSTEM=/dev/null
 export GIT_AUTHOR_NAME=t GIT_AUTHOR_EMAIL=t@t GIT_COMMITTER_NAME=t GIT_COMMITTER_EMAIL=t@t
 REAL_GIT=$(command -v git)
-T=$(mktemp -d); cd "$T"
+T=$(cd "$(mktemp -d)" && pwd -P); cd "$T"
+cp "$WF_SRC" "$T/wf.sh"; W="bash $T/wf.sh"
 PASS=0; FAIL=0
 mk() { rm -rf "$1"; git init -q -b main "$1"; git -C "$1" config user.email t@t; git -C "$1" config user.name t; echo a > "$1/a"; git -C "$1" add a; git -C "$1" commit -qm init; }
 # expect <label> <expected-exit> <grep-pattern or -> cmd...
@@ -118,5 +119,12 @@ echo "## check (#11) unchanged"
 expect "check pass"                  0 "PASS"                $W check 'true'
 expect "check fail exit 1"           1 "FAIL"                $W check 'false' 'true'
 expect "check no args"               1 "usage"               $W check
+
+echo "## INTENT2SHIP_SESSION=cloud override (keyed on facts, not host names)"
+cd "$T"; git -C up.git symbolic-ref HEAD refs/heads/main; rm -rf cl4; git clone -q up.git cl4 2>/dev/null; cd cl4; git config user.email t@t; git config user.name t
+expect "env: local by default"       0 "session=local"       $W env
+expect "env: override says cloud"    0 "session=cloud"       env INTENT2SHIP_SESSION=cloud $W env
+expect "cloud override: in place"    0 "^branch feat/cloudx" env INTENT2SHIP_SESSION=cloud $W start feat - cloudx
+expect "cloud override: no worktree" 0 -  bash -c '[ ! -e .worktrees ] && [ "$(git branch --show-current)" = feat/cloudx ]'
 
 echo; echo "passed=$PASS failed=$FAIL"
